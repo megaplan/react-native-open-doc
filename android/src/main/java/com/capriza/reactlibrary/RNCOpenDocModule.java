@@ -4,6 +4,7 @@ package com.capriza.reactlibrary;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
+import android.support.v4.content.FileProvider;
 import android.util.Log;
 import android.webkit.MimeTypeMap;
 
@@ -31,8 +32,8 @@ public class RNCOpenDocModule extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void open(String path) {
-    if (!path.startsWith("file://")) {
-      path = "file://" + path;
+    if (path.startsWith("file://")) {
+      path = path.replace("file://", "");
     }
 
     File file = new File(path);
@@ -41,7 +42,8 @@ public class RNCOpenDocModule extends ReactContextBaseJavaModule {
       return;
     }
     MimeTypeMap mime = MimeTypeMap.getSingleton();
-    Uri uri = Uri.parse(path);
+    Uri uri = FileProvider.getUriForFile(reactContext.getApplicationContext(),reactContext.getApplicationContext().getPackageName() + ".provider", file);
+
 
     String ext = "";
     int nameEndIndex = uri.toString().lastIndexOf('.');
