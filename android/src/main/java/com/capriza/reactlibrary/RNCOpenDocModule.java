@@ -106,7 +106,10 @@ public class RNCOpenDocModule extends ReactContextBaseJavaModule {
       shareIntent.setType(type);
       shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
-      getReactApplicationContext().startActivity(Intent.createChooser(shareIntent, "Share"));
+      Intent i = Intent.createChooser(shareIntent, "Share");
+      i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+      getReactApplicationContext().startActivity(i);
     } catch(ActivityNotFoundException ex) {
       Log.e(LOG_TAG, "can't share document", ex);
     }
