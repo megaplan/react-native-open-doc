@@ -2,6 +2,7 @@
 # react-native-open-doc
 
 Open files stored on device - Android and iOS. 
+
 Share files on Android (for iOS use the react-native Share.share({ url: selectedUri }) api).
 
 ## Getting started
