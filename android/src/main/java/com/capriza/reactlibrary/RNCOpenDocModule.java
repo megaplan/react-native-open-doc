@@ -8,6 +8,7 @@ import android.support.v4.content.FileProvider;
 import android.util.Log;
 import android.webkit.MimeTypeMap;
 
+import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
@@ -50,21 +51,28 @@ public class RNCOpenDocModule extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
-  public void open(String path) {
+  public void open(String path, final Promise promise) {
     if (path.startsWith("file://")) {
       path = path.replace("file://", "");
     }
 
-    File file = new File(path);
-    if (!file.exists()) {
-      Log.e(LOG_TAG, "File does not exist");
-      return;
-    }
-
     try {
-      Uri uri = FileProvider.getUriForFile(reactContext.getApplicationContext(),reactContext.getApplicationContext().getPackageName() + ".provider", file);
+      Uri uri;
+      String type = null;
 
-      String type = this.getMimeType(uri.toString());
+      if (!path.startsWith("content://")) {
+        File file = new File(path);
+        if (!file.exists()) {
+          Log.e(LOG_TAG, "File does not exist");
+          promise.reject("404", "File does not exist");
+          return;
+        }
+
+        uri = FileProvider.getUriForFile(reactContext.getApplicationContext(), reactContext.getApplicationContext().getPackageName() + ".provider", file);
+        type = this.getMimeType(uri.toString());
+      } else {
+        uri = Uri.parse(path);
+      }
 
       Intent intent = new Intent(Intent.ACTION_VIEW, uri);
 
@@ -72,14 +80,18 @@ public class RNCOpenDocModule extends ReactContextBaseJavaModule {
         intent.setDataAndType(uri, type);
       } else if (type != null) {
         intent.setType(type);
+      } else if (uri != null) {
+        intent.setData(uri);
       }
 
       intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
       intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
       getReactApplicationContext().startActivity(intent);
+      promise.resolve(null);
     } catch(ActivityNotFoundException ex) {
       Log.e(LOG_TAG, "can't open document", ex);
+      promise.reject("500", "can't open document");
     }
   }
 

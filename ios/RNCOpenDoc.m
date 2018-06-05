@@ -33,18 +33,18 @@ RCT_EXPORT_METHOD(open: (NSURL *)path)
 #endif
     self.documentInteractionController = [UIDocumentInteractionController interactionControllerWithURL:path];
     self.documentInteractionController.delegate = self;
-    [self openWith:path];
+    BOOL fileOpenSuccess = [self.documentInteractionController presentPreviewAnimated:YES];
+    if (!fileOpenSuccess) {
+        [self openWith:path];
+    }
 }
 
 - (void) openWith:(NSURL *)path
 {
     self.documentInteractionController = [UIDocumentInteractionController interactionControllerWithURL:path];
     self.documentInteractionController.delegate = self;
-
+    
     UIViewController *root = [[[[UIApplication sharedApplication] delegate] window] rootViewController];
-    while (root.presentedViewController) {
-        root = root.presentedViewController;
-    }
     CGRect screenRect = [[root view] bounds];
     CGFloat screenWidth = screenRect.size.width;
     CGFloat screenHeight = screenRect.size.height;
